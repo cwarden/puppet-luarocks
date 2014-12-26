@@ -21,7 +21,8 @@
 define luarocks::rock(
   $ensure = 'present',
   $source = 'absent',
-  $provider = 'default'
+  $provider = 'default',
+  $server = undef
 ) {
   require ::luarocks
   require luarocks::rock::build-depends
@@ -54,11 +55,17 @@ define luarocks::rock(
       $rock_version_check_str = '.*'
   }
 
+  if $server {
+	  $server_param = "--server $server"
+  } else {
+	  $server_param = ""
+  }
+
   if $ensure == 'present' {
       if $source != 'absent' {
-        $rock_cmd = "luarocks install ${luarocks::rock::cachedir::dir}/${name}.rock"
+        $rock_cmd = "luarocks $server_param install ${luarocks::rock::cachedir::dir}/${name}.rock"
       } else {
-        $rock_cmd = "luarocks install ${real_name} ${rock_version_str}"
+        $rock_cmd = "luarocks $server_param install ${real_name} ${rock_version_str}"
       }
   } else {
       $rock_cmd = "luarocks remove ${real_name} ${rock_version_str}"
