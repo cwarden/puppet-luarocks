@@ -75,14 +75,16 @@ define luarocks::rock(
       command => $rock_cmd
   }
 
-  $rock_cmd_check_str = "luarocks list | egrep -A1 '^${real_name}\\>' | tail -1 | egrep '\\<${rock_version_check_str}\\> \\(installed\\)'"
+  $rock_cmd_check_str = "luarocks list | /egrep -A1 '^${real_name}\\>' | tail -1 | egrep '\\<${rock_version_check_str}\\> \\(installed\\)'"
   if $ensure == 'present' {
       Exec["manage_rock_${name}"]{
-         unless => $rock_cmd_check_str
+         unless => $rock_cmd_check_str,
+         path => "/bin:/usr/bin",
       }
   } else {
       Exec["manage_rock_${name}"]{
-         onlyif => $rock_cmd_check_str
+         onlyif => $rock_cmd_check_str,
+         path => "/bin:/usr/bin",
       }
   }
 }
