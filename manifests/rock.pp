@@ -25,7 +25,7 @@ define luarocks::rock(
   $server = undef
 ) {
   require ::luarocks
-  require luarocks::rock::build-depends
+  require luarocks::rock::build_depends
 
   if $name =~ /\-(\d|\.)+$/ {
     $real_name = regsubst($name,'^(.*)-(\d|\.)+$','\1')
