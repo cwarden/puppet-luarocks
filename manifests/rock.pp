@@ -28,8 +28,8 @@ define luarocks::rock(
   require luarocks::rock::build_depends
 
   if $name =~ /\-(\d|\.)+$/ {
-    $real_name = regsubst($name,'^(.*)-(\d|\.)+$','\1')
-    $rock_version = regsubst($name,'^(.*)-(\d+(\d|\.)+)$','\2')
+    $real_name = regsubst($name,'^(.*)-(\d+(\d|\.|-)+)$','\1')
+    $rock_version = regsubst($name,'^(.*)-(\d+(\d|\.|-)+)$','\2')
   } else {
     $real_name = $name
   }
