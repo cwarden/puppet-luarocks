@@ -21,14 +21,15 @@
 define luarocks::rock(
   $ensure = 'present',
   $source = 'absent',
-  $provider = 'default'
+  $provider = 'default',
+  $server = undef
 ) {
   require ::luarocks
-  require luarocks::rock::build-depends
+  require luarocks::rock::build_depends
 
   if $name =~ /\-(\d|\.)+$/ {
-    $real_name = regsubst($name,'^(.*)-(\d|\.)+$','\1')
-    $rock_version = regsubst($name,'^(.*)-(\d+(\d|\.)+)$','\2')
+    $real_name = regsubst($name,'^(.*)-(\d+(\d|\.|-)+)$','\1')
+    $rock_version = regsubst($name,'^(.*)-(\d+(\d|\.|-)+)$','\2')
   } else {
     $real_name = $name
   }
@@ -49,16 +50,26 @@ define luarocks::rock(
 
   if $rock_version {
       $rock_version_str = "${rock_version}"
-      $rock_version_check_str = $rock_version
+      if $rock_version_str =~ /-\d/ {
+        $rock_version_check_str = $rock_version_str
+      } else {
+        $rock_version_check_str = "${rock_version_str}-[0-9]+"
+      }
   } else {
       $rock_version_check_str = '.*'
   }
 
+  if $server {
+	  $server_param = "--server $server"
+  } else {
+	  $server_param = ""
+  }
+
   if $ensure == 'present' {
       if $source != 'absent' {
-        $rock_cmd = "luarocks install ${luarocks::rock::cachedir::dir}/${name}.rock"
+        $rock_cmd = "luarocks $server_param install ${luarocks::rock::cachedir::dir}/${name}.rock"
       } else {
-        $rock_cmd = "luarocks install ${real_name} ${rock_version_str}"
+        $rock_cmd = "luarocks $server_param install ${real_name} ${rock_version_str}"
       }
   } else {
       $rock_cmd = "luarocks remove ${real_name} ${rock_version_str}"
@@ -71,11 +82,13 @@ define luarocks::rock(
   $rock_cmd_check_str = "luarocks list | egrep -A1 '^${real_name}\\>' | tail -1 | egrep '\\<${rock_version_check_str}\\> \\(installed\\)'"
   if $ensure == 'present' {
       Exec["manage_rock_${name}"]{
-         unless => $rock_cmd_check_str
+         unless => $rock_cmd_check_str,
+         path => "/bin:/usr/bin",
       }
   } else {
       Exec["manage_rock_${name}"]{
-         onlyif => $rock_cmd_check_str
+         onlyif => $rock_cmd_check_str,
+         path => "/bin:/usr/bin",
       }
   }
 }
